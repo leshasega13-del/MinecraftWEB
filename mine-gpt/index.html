@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>3D Minecraft Game</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #hint {
+      position: absolute; left: 10px; top: 10px; color: white;
+      background: rgba(0,0,0,0.35); padding: 6px 10px; border-radius: 6px;
+      font-family: sans-serif;
+    }
+    #hotbar {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+    }
+    .slot {
+      width: 60px; height: 60px;
+      border: 2px solid white;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-family: sans-serif;
+      border-radius: 6px;
+      text-transform: capitalize;
+    }
+    .slot.selected { border-color: yellow; }
+
+    /* Crosshair in the center */
+    #crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      color: white;
+      user-select: none;
+      pointer-events: none;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="hint">Click to lock pointer • WASD move • Space jump • Shift run • 1–5 select block</div>
+  <div id="hotbar"></div>
+  <div id="crosshair">+</div>
+
+  <!-- libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- game files -->
+  <script src="js/blockSystem.js"></script>
+  <script src="js/worldGen.js"></script>
+  <script src="js/cameraControls.js"></script>
+
+  <script>
+    // --- scene / renderer / camera ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // lights
+    scene.background = new THREE.Color(0x87CEEB);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambient);
+    const sun = new THREE.DirectionalLight(0xffffff, 0.6);
+    sun.position.set(50, 80, 50);
+    scene.add(sun);
+
+    // world
+    generateWorld();
+
+    // controls / player
+    initControls();
+
+    // animation
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = Math.min(0.05, clock.getDelta());
+      updatePlayer(dt);
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
